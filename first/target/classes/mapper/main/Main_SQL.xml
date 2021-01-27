@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="main">
+
+
+<select resultType="hashmap" parameterType="hashmap" id="selectBoardList">
+
+<![CDATA[
+			select *from(SELECT
+			GOODS_NAME,
+			GOODS_SUMIMG,
+			GOODS_COMPANY,
+			GOODS_PRICE,
+			GOODS_IDX,
+            goods_count
+			FROM 
+			GOODS
+			ORDER BY GOODS_COUNT DESC)
+            WHERE ROWNUM<=30
+		]]>
+</select>
+
+
+<select resultType="hashmap" parameterType="hashmap" id="goodsDetail">
+
+<![CDATA[
+			SELECT
+				goods_idx,
+				goods_kind,
+				goods_name,
+				goods_price,
+				goods_company,
+				goods_origin,
+				goods_count,
+				delivery_pay,
+				goods_content,
+				goods_sumIMG
+			FROM 
+				GOODS
+			where 
+				goods_idx=#{GOODS_IDX}
+		]]>
+</select>
+		
+<select resultType="hashmap" parameterType="hashmap" id="selectFruitList">
+<include refid="common.pagingPre"/>
+<![CDATA[
+select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_COUNT DESC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='1'
+		
+       
+		]]>
+<include refid="common.pagingPost"/>
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectGrainList">
+<include refid="common.pagingPre"/>
+<![CDATA[
+	select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_COUNT DESC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='2'
+		]]>
+<include refid="common.pagingPost"/>
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectMeatList">
+<include refid="common.pagingPre"/>
+<![CDATA[
+	select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_COUNT DESC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='3'
+		]]>
+<include refid="common.pagingPost"/>
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectVegetableList">
+<include refid="common.pagingPre"/>
+<![CDATA[
+	select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_COUNT DESC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='4'
+		]]>
+<include refid="common.pagingPost"/>
+</select>
+
+
+<select id="selectSearchList" parameterType="hashmap" resultType="hashmap">
+	
+		<include refid="common.pagingPre"/> 
+		
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY GOODS_IDX DESC) RNUM,
+			    GOODS_SUMIMG,
+			    GOODS_IDX,
+			    DELIVERY_PAY,
+			    GOODS_PRICE,
+			    GOODS_NAME,
+			    GOODS_COMPANY
+			FROM
+			    GOODS
+			WHERE
+			   '1'='1' 
+			<if test="selectSearch != null and selectSearch != '' ">
+			AND	
+				${selectSearch} LIKE '%' || #{SEARCHKEYWORD} || '%'
+			</if>	
+		
+		<include refid="common.pagingPost"/> 
+		
+	</select>
+
+
+
+
+</mapper>

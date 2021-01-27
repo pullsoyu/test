@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="goods">
+
+<select resultType="hashmap" parameterType="hashmap" id="selectFruitListPA">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_PRICE ASC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='1'
+		
+       
+		]]>
+<include refid="common.pagingPost"/>
+
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectFruitListPD">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_PRICE DESC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='1'
+		
+       
+		]]>
+<include refid="common.pagingPost"/>
+
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectFruitListRD">
+<include refid="common.pagingPre"/>
+<![CDATA[
+	select ROW_NUMBER() OVER (order by COUNTING desc) RNUM, B.goods_idx ,A.goods_name, A.COUNTING, B.goods_sumIMG, B.goods_company, B.goods_price
+from
+  (select goods_name, count(*) COUNTING
+   from
+      (select 
+      g.goods_name,g.goods_sumIMG,g.goods_company,g.goods_price,g.goods_idx,r.review_idx
+      from
+      goods g,
+      review r
+   where 
+      g.goods_idx = r.goods_idx and goods_kind='1')
+      group by goods_name) A, goods B
+where A.GOODS_NAME = B.GOODS_NAME
+
+		]]>
+<include refid="common.pagingPost"/>
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectFruitListID">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_IDX DESC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='1'
+		
+       
+		]]>
+<include refid="common.pagingPost"/>
+
+</select>
+
+
+<!-- 잡곡 -->
+<select resultType="hashmap" parameterType="hashmap" id="selectGrainListPA">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_PRICE ASC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='2'
+		
+       
+		]]>
+<include refid="common.pagingPost"/>
+
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectGrainListPD">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_PRICE DESC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='2'
+		
+       
+		]]>
+<include refid="common.pagingPost"/>
+
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectGrainListRD">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+	select ROW_NUMBER() OVER (order by COUNTING desc) RNUM, B.goods_idx ,A.goods_name, A.COUNTING, B.goods_sumIMG, B.goods_company, B.goods_price
+from
+  (select goods_name, count(*) COUNTING
+   from
+      (select 
+      g.goods_name,g.goods_sumIMG,g.goods_company,g.goods_price,g.goods_idx,r.review_idx
+      from
+      goods g,
+      review r
+   where 
+      g.goods_idx = r.goods_idx and goods_kind='2')
+      group by goods_name) A, goods B
+where A.GOODS_NAME = B.GOODS_NAME
+
+		]]>
+<include refid="common.pagingPost"/>
+
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectGrainListID">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_IDX DESC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='2'
+		
+       
+		]]>
+<include refid="common.pagingPost"/>
+
+
+</select>
+
+<!-- 축산 -->
+
+<select resultType="hashmap" parameterType="hashmap" id="selectMeatListPA">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_PRICE ASC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='3'
+		
+       
+		]]>
+<include refid="common.pagingPost"/>
+
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectMeatListPD">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_PRICE DESC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='3'
+		
+       
+		]]>
+<include refid="common.pagingPost"/>
+
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectMeatListRD">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+	select ROW_NUMBER() OVER (order by COUNTING desc) RNUM, B.goods_idx ,A.goods_name, A.COUNTING, B.goods_sumIMG, B.goods_company, B.goods_price
+from
+  (select goods_name, count(*) COUNTING
+   from
+      (select 
+      g.goods_name,g.goods_sumIMG,g.goods_company,g.goods_price,g.goods_idx,r.review_idx
+      from
+      goods g,
+      review r
+   where 
+      g.goods_idx = r.goods_idx and goods_kind='3')
+      group by goods_name) A, goods B
+where A.GOODS_NAME = B.GOODS_NAME
+
+		]]>
+<include refid="common.pagingPost"/>
+
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectMeatListID">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_IDX DESC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='3'
+		
+       
+		]]>
+<include refid="common.pagingPost"/>
+
+
+</select>
+<!-- 채소 -->
+
+<select resultType="hashmap" parameterType="hashmap" id="selectVegetableListPA">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_PRICE ASC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='4'
+		
+       
+		]]>
+<include refid="common.pagingPost"/>
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectVegetableListPD">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_PRICE DESC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='4'
+		
+       
+		]]>
+<include refid="common.pagingPost"/>
+
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectVegetableListRD">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+	select ROW_NUMBER() OVER (order by COUNTING desc) RNUM, B.goods_idx ,A.goods_name, A.COUNTING, B.goods_sumIMG, B.goods_company, B.goods_price
+from
+  (select goods_name, count(*) COUNTING
+   from
+      (select 
+      g.goods_name,g.goods_sumIMG,g.goods_company,g.goods_price,g.goods_idx,r.review_idx
+      from
+      goods g,
+      review r
+   where 
+      g.goods_idx = r.goods_idx and goods_kind='4')
+      group by goods_name) A, goods B
+where A.GOODS_NAME = B.GOODS_NAME
+
+		]]>
+<include refid="common.pagingPost"/>
+
+</select>
+
+<select resultType="hashmap" parameterType="hashmap" id="selectVegetableListID">
+
+<include refid="common.pagingPre"/>
+<![CDATA[
+select	
+		ROW_NUMBER() OVER (ORDER BY GOODS_IDX DESC) RNUM,
+		goods_name,
+		goods_company,
+		goods_price,
+		goods_sumIMG,
+		goods_idx
+	from	
+		goods
+	where
+		goods_kind='4'
+		
+       
+		]]>
+<include refid="common.pagingPost"/>
+
+
+</select>
+
+</mapper>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="member">
+	
+	<insert id="join" parameterType="hashmap" useGeneratedKeys="true" keyProperty="IDX" >
+		
+		<![CDATA[
+		insert into member(
+	        member_idx,
+	        member_id,
+	        member_password,
+	        member_name,
+	        member_phone,
+	        member_email,
+	        member_zipcode,
+	        member_address1,
+	        member_address2,
+	        member_registDate,
+	        member_point,
+	        member_delGB,
+	        MEMBER_VERIFY,
+	        MEMBER_VERIFY_KEY
+	        
+	        
+	       
+	        
+		) values (
+	        SEQ_MEMBER.NEXTVAL,
+	        #{member_id},
+	        #{member_password},
+	        #{member_name},
+	        #{member_phone},
+	        #{member_email},
+	        #{member_zipcode},
+	        #{member_address1},
+	        #{member_address2},
+	        SYSDATE,
+	        0,
+	       	'N',
+	       	'false',
+	       	#{MEMBER_VERIFY_KEY}
+		)
+
+		]]>
+	</insert>
+
+	<!-- 로그인 -->
+	<select id="selectId" parameterType="hashmap" resultType="hashmap">
+	<![CDATA[
+		SELECT
+        MEMBER_ID,
+        MEMBER_NAME,
+        MEMBER_PASSWORD,
+        MEMBER_EMAIL,
+        MEMBER_IDX
+		FROM    MEMBER
+		WHERE   MEMBER_ID = #{MEMBER_ID}
+		AND     MEMBER_DELGB = 'N'
+		AND		MEMBER_VERIFY = 'true'
+	]]>
+	</select>
+
+	<!-- 이메일 인증 -->
+	<update id="approval_member" parameterType="hashmap">
+		update MEMBER set MEMBER_VERIFY = 'true' where member_email = #{member_email} and MEMBER_VERIFY_KEY = #{MEMBER_VERIFY_KEY}
+	</update>
+
+	<!-- 아이디 중복 검사 -->
+	<select id="check_id" parameterType="String" resultType="int">
+		select count(*) from member where MEMBER_ID = #{member_id}
+	</select>
+	
+	<!-- 아이디 중복 검사 -->
+	<select id="check_email" parameterType="String" resultType="int">
+		select count(*) from member where MEMBER_EMAIL = #{member_email}
+	</select>
+	
+	<!-- 아이디 찾기 -->
+	<select id = "findId" parameterType="hashmap" resultType="hashmap">
+		select 
+			MEMBER_ID 
+		from 
+			MEMBER 
+		where MEMBER_NAME = #{MEMBER_NAME} 
+		and MEMBER_EMAIL = #{MEMBER_EMAIL} 
+		
+	</select>
+	
+	<!-- 비밀번호 찾기 -->
+	<select id = "findPw" parameterType="hashmap" resultType="hashmap">
+		select 
+			MEMBER_PASSWORD 
+		from 
+			MEMBER 
+		where MEMBER_ID = #{MEMBER_ID} 
+		and MEMBER_EMAIL = #{MEMBER_EMAIL} 
+		
+	</select>
+	
+
+</mapper>

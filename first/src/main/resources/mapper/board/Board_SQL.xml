@@ -1,0 +1,664 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="board">
+	<!-- @@@@@@@@@@@@@@@@@@@@@@@@@@BOARD@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+	<select id="selectBoardList" parameterType="hashmap" resultType="hashmap">
+		<include refid="common.pagingPre"/> 
+		
+		<![CDATA[ 
+		
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY BOARD_IDX DESC) RNUM,
+				BOARD_KIND, 
+				BOARD_IDX,
+				BOARD_TITLE,
+				MEMBER_ID,
+				BOARD_COUNT,
+				TO_CHAR(BOARD_REGDATE, 'YYYY.MM.DD') AS BOARD_REGDATE
+			FROM 
+				BOARD 
+					ORDER BY BOARD_IDX DESC 
+				
+		]]>
+		
+		<include refid="common.pagingPost"/> 
+		
+	</select>
+
+
+	<!-- 공지사항 리스트 -->
+	<select id="selectNoticeBoardList" parameterType="hashmap" resultType="hashmap">
+		<include refid="common.pagingPre"/> 
+		
+		<![CDATA[ 
+		
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY BOARD_IDX DESC) RNUM,
+				BOARD_KIND, 
+				BOARD_IDX,
+				BOARD_TITLE,
+				MEMBER_ID,
+				BOARD_COUNT,
+				TO_CHAR(BOARD_REGDATE, 'YYYY.MM.DD') AS BOARD_REGDATE
+			FROM 
+				BOARD 
+			WHERE
+				BOARD_KIND = 1
+						ORDER BY BOARD_IDX DESC 
+				
+		]]>
+		
+		<include refid="common.pagingPost"/> 
+		
+	</select>
+	
+	<!-- 이벤트게시판 리스트 -->
+	<select id="selectEventBoardList" parameterType="hashmap" resultType="hashmap">
+		<include refid="common.pagingPre"/> 
+		
+		<![CDATA[ 
+		
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY BOARD_IDX DESC) RNUM,
+				BOARD_KIND, 
+				BOARD_IDX,
+				BOARD_TITLE,
+				MEMBER_ID,
+				BOARD_COUNT,
+				TO_CHAR(BOARD_REGDATE, 'YYYY.MM.DD') AS BOARD_REGDATE
+			FROM 
+				BOARD 
+			WHERE
+				BOARD_KIND = 2 
+						ORDER BY BOARD_IDX DESC 
+				
+		]]>
+		
+		<include refid="common.pagingPost"/> 
+		
+	</select>
+	
+
+
+	<insert id="insertBoard" parameterType="hashmap" useGeneratedKeys="true" keyProperty="BOARD_IDX">
+		<selectKey keyProperty="BOARD_IDX" resultType="string" order="BEFORE">
+			SELECT SEQ_BOARD.NEXTVAL FROM DUAL
+		</selectKey>
+		
+		<![CDATA[ 
+		
+			INSERT INTO 
+				BOARD ( 
+					BOARD_KIND,
+					BOARD_IDX, 
+					BOARD_TITLE, 
+					BOARD_CONTENT, 
+					BOARD_COUNT, 
+					BOARD_REGDATE, 
+					MEMBER_ID 
+					) 
+				VALUES 
+				( 
+					#{BOARD_KIND},
+					#{BOARD_IDX},
+					#{BOARD_TITLE}, 
+					#{BOARD_CONTENT}, 
+					0, 
+					TO_CHAR(SYSDATE, 'YYYYMMDD'),
+					'관리자' 
+				) 
+			
+			]]>
+			
+	</insert>
+	
+	<update id="updateHitCnt" parameterType="hashmap"> 
+	
+	<![CDATA[ 
+	
+		UPDATE 
+				BOARD 
+			SET 
+				BOARD_COUNT = NVL(BOARD_COUNT, 0) + 1 
+			WHERE 
+				BOARD_IDX = #{BOARD_IDX} 
+		
+	]]>
+	
+	</update>	
+	
+	<!-- 공지, 이벤트 게시판 - 전용 조회수 쿼리 -->	
+	<update id="updateNVHitCnt" parameterType="hashmap"> 
+	
+	<![CDATA[ 
+	
+		UPDATE 
+				BOARD 
+			SET 
+				BOARD_COUNT = NVL(BOARD_COUNT, 0) + 1 
+			WHERE 
+				BOARD_IDX = #{BOARD_IDX} AND BOARD_KIND = #{BOARD_KIND} 
+		
+	]]>
+	
+	</update>
+	<!-- 공지, 이벤트 게시판 - 전용 조회수 쿼리 끝 -->
+	
+	<!-- 공지, 이벤트 게시판 뷰 - 전용 쿼리 -->	
+		<select id="selectNVBoardDetail" parameterType="hashmap" resultType="hashmap"> 
+		
+		<![CDATA[ 
+			
+			SELECT 
+				BOARD_KIND,
+				BOARD_IDX, 
+				BOARD_COUNT, 
+				MEMBER_ID, 
+				BOARD_REGDATE, 
+				BOARD_TITLE, 
+				BOARD_CONTENT 
+			FROM 
+				BOARD 
+			WHERE 
+				BOARD_IDX = #{BOARD_IDX} AND BOARD_KIND = #{BOARD_KIND}
+			
+		]]>
+	
+	</select>
+	<!-- 공지, 이벤트 게시판 뷰 - 전용 쿼리 끝 -->	
+	
+
+	<select id="selectBoardDetail" parameterType="hashmap" resultType="hashmap"> 
+		
+		<![CDATA[ 
+			
+			SELECT 
+				BOARD_KIND,
+				BOARD_IDX, 
+				BOARD_COUNT, 
+				MEMBER_ID, 
+				BOARD_REGDATE, 
+				BOARD_TITLE, 
+				BOARD_CONTENT 
+			FROM 
+				BOARD 
+			WHERE 
+				BOARD_IDX = #{BOARD_IDX} 
+			
+		]]>
+	
+	</select>	
+	
+	
+	<update id="updateBoard" parameterType="hashmap"> 
+	
+		<![CDATA[ 
+			UPDATE 
+				BOARD 
+			SET 
+				BOARD_TITLE = #{BOARD_TITLE}, 
+				BOARD_CONTENT = #{BOARD_CONTENT} 
+			WHERE 
+				BOARD_IDX = #{BOARD_IDX} AND BOARD_KIND = #{BOARD_KIND} 
+		
+		]]>
+	
+	</update>
+	
+	
+	
+	<update id="deleteBoard" parameterType="hashmap"> 
+	
+		<![CDATA[ 
+			
+			DELETE 
+				FROM 
+				 	BOARD 
+			WHERE 
+				BOARD_IDX = #{BOARD_IDX} AND BOARD_KIND = #{BOARD_KIND}  
+				
+		]]>
+
+	</update>
+
+	<insert id="insertFile" parameterType="hashmap">
+		
+		<![CDATA[
+		
+			INSERT INTO 
+				FILES 
+				(
+					FILE_IDX,
+					BOARD_KIND,
+					BOARD_IDX,
+					ORIGINAL_FILE_NAME,
+					STORED_FILE_NAME,
+					FILE_SIZE,
+					MEMBER_ID
+				)
+				VALUES
+				(
+					SEQ_FILES.NEXTVAL,
+					#{BOARD_KIND},
+					#{BOARD_IDX},
+					#{ORIGINAL_FILE_NAME},
+					#{STORED_FILE_NAME},
+					#{FILE_SIZE},
+					'관리자'
+				)
+				
+		]]>
+	
+	</insert>
+
+	<select id="selectFileList" parameterType="hashmap" resultType="hashmap"> 
+		
+		<![CDATA[ 
+		
+			SELECT 
+				FILE_IDX, 
+				ORIGINAL_FILE_NAME, 
+				ROUND(FILE_SIZE/1024,1) AS FILE_SIZE 
+			FROM 
+				FILES 
+			WHERE 
+				BOARD_IDX = #{BOARD_IDX} AND FILE_DELGB = 'N' AND BOARD_KIND = #{BOARD_KIND} 
+			
+		]]>
+	
+	</select>
+
+	<update id="deleteFileList" parameterType="hashmap"> 
+	
+		<![CDATA[ 
+			
+			UPDATE 
+				FILES 
+			SET 
+				FILE_DELGB = 'Y' 
+			WHERE 
+				BOARD_IDX = #{BOARD_IDX} AND BOARD_KIND = #{BOARD_KIND} 
+				
+		]]>
+	
+	</update>
+	
+	<update id="updateFile" parameterType="hashmap"> 
+	
+		<![CDATA[ 
+		
+			UPDATE 
+				FILES 
+			SET 
+				FILE_DELGB = 'N' 
+			WHERE 
+				FILE_IDX = #{FILE_IDX} 
+			
+		]]>
+		
+	</update>
+	
+	<!-- 댓글쿼리 -->
+	<select id="selectCommentBoardList" parameterType="hashmap" resultType="hashmap">
+		
+		<![CDATA[ 
+		
+			SELECT  
+                COMMENT_IDX, 
+                BOARD_KIND,
+                BOARD_IDX, 
+                MEMBER_ID, 
+				TO_CHAR(COMMENT_REGDATE, 'YYYY.MM.DD') AS COMMENT_REGDATE, 
+                COMMENT_CONTENT
+			FROM 
+				COMMENTBOARD 
+					
+			WHERE
+				BOARD_IDX = #{BOARD_IDX} AND BOARD_KIND = #{BOARD_KIND} 
+                    ORDER BY COMMENT_IDX DESC
+		
+		]]>
+				
+	</select>
+
+	<update id="deleteCommentBoard" parameterType="hashmap"> 
+	
+		<![CDATA[ 
+			
+			DELETE 
+				FROM 
+				 	COMMENTBOARD 
+			WHERE 
+				COMMENT_IDX = #{COMMENT_IDX} AND MEMBER_ID = #{MEMBER_ID}
+					AND BOARD_IDX = #{BOARD_IDX} AND BOARD_KIND = #{BOARD_KIND} 
+				
+		]]>
+		
+	</update>
+		
+	<insert id="insertCommentBoard" parameterType="hashmap">
+		
+		<![CDATA[ 
+		
+			INSERT INTO 
+				COMMENTBOARD ( 
+					COMMENT_IDX, 
+					BOARD_KIND,
+					BOARD_IDX, 
+					MEMBER_ID, 
+					COMMENT_REGDATE, 
+					COMMENT_CONTENT
+					) 
+				VALUES 
+				( 
+					SEQ_COMMENT_BOARD.NEXTVAL,
+					#{BOARD_KIND},
+					#{BOARD_IDX},
+					#{MEMBER_ID}, 
+					TO_CHAR(SYSDATE, 'YYYYMMDD'),
+					#{COMMENT_CONTENT}
+				) 
+			
+			]]>
+			
+	</insert>
+	
+	<update id="updateCommentBoard" parameterType="hashmap"> 
+	
+		<![CDATA[ 
+			UPDATE 
+				COMMENTBOARD 
+			SET 
+				COMMENT_CONTENT = #{COMMENT_CONTENT},
+				COMMENT_REGDATE = SYSDATE 
+			WHERE 
+				COMMENT_IDX = #{COMMENT_IDX} AND BOARD_IDX = #{BOARD_IDX} AND BOARD_KIND = #{BOARD_KIND} 
+		
+		]]>
+	
+	</update> 
+	
+	<!-- @@@@@@@@@@@@@@@@@@@@@@@@@@댓글@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+	
+	<insert id="commentWrite" parameterType="hashmap" >
+		
+		<![CDATA[
+			INSERT INTO COMMENTBOARD 
+			( 
+				COMMENT_IDX,
+				BOARD_IDX,
+				MEMBER_ID,
+				COMMENT_REGDATE,
+				COMMENT_CONTENT
+			 )
+			 VALUES
+			 ( 
+			 	SEQ_COMMENT_BOARD.NEXTVAL,
+			 	#{BOARD_IDX},
+			 	#{MEMBER_ID},
+			 	TO_CHAR(SYSDATE, 'YYYYMMDD'),
+			 	#{COMMENT_CONTENT}
+			)
+		]]>
+		
+	</insert>
+	
+	<!-- 댓글리스트 -->
+	<select id="photoCommentList" parameterType="hashmap" resultType="hashmap">
+		
+		<![CDATA[
+			SELECT
+			    COMMENT_IDX,
+				BOARD_IDX,
+				MEMBER_ID,
+				COMMENT_REGDATE,
+				COMMENT_CONTENT
+			FROM
+			    COMMENTBOARD
+			WHERE
+				BOARD_IDX=#{BOARD_IDX}
+		]]>
+		 
+	</select>
+	
+	<!-- 댓글리스트 페이징 -->
+	<select id="selectPhotoCommentList" parameterType="hashmap" resultType="hashmap">
+		<include refid="common.pagingPre"/> 
+		
+		<![CDATA[ 
+		
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY COMMENT_IDX DESC) RNUM,
+				COMMENT_IDX,
+				BOARD_IDX,
+				MEMBER_ID,
+				COMMENT_REGDATE,
+				COMMENT_CONTENT
+			FROM 
+				COMMENTBOARD 
+			WHERE
+				BOARD_IDX=#{BOARD_IDX}
+				
+		]]>
+		
+		<include refid="common.pagingPost"/> 
+		
+	</select>
+	<!-- 댓글 삭제 -->
+	<delete id="photoCommentDelete" parameterType="hashmap" >
+		delete COMMENTBOARD
+		where COMMENT_IDX = #{COMMENT_IDX}
+		and MEMBER_ID = #{MEMBER_ID}
+	</delete>
+	
+	
+	<update id="photoCommentModify" parameterType="hashmap">
+		
+		<![CDATA[ 
+		UPDATE 
+				COMMENTBOARD 
+			SET 
+				COMMENT_CONTENT = #{COMMENT_CONTENT}
+			WHERE 
+				COMMENT_IDX = #{COMMENT_IDX} 
+		]]>
+	
+	</update>
+	
+	
+	<!-- @@@@@@@@@@@@@@@@@@@@@@@@@@PHOTO@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+	
+	<delete id="deletePhoto" parameterType="hashmap" >
+		delete BOARD
+		where BOARD_IDX = #{BOARD_IDX}
+	</delete>
+
+
+	
+	<insert id="insertPhoto" parameterType="hashmap" useGeneratedKeys="true" keyProperty="BOARD_IDX">
+		<selectKey keyProperty="BOARD_IDX" resultType="string" order="BEFORE">
+			SELECT SEQ_BOARD.NEXTVAL FROM DUAL
+		</selectKey>
+		
+		<![CDATA[ 
+		
+			INSERT INTO 
+				BOARD ( 
+					BOARD_KIND,
+					BOARD_IDX, 
+					BOARD_TITLE, 
+					BOARD_CONTENT, 
+					BOARD_COUNT, 
+					BOARD_REGDATE, 
+					MEMBER_ID 
+					) 
+				VALUES 
+				( 
+					'3',
+					#{BOARD_IDX},
+					#{BOARD_TITLE}, 
+					#{BOARD_CONTENT}, 
+					0, 
+					SYSDATE, 
+					#{MEMBER_ID}
+				) 
+			
+			]]>
+			
+	</insert>
+	
+	<insert id="insertPhotoImage" parameterType="hashmap">
+		<![CDATA[ 
+		
+			INSERT INTO 
+				IMAGES ( 
+					IMAGE_IDX,
+					BOARD_IDX,
+					IMAGE_NAME
+					) 
+				VALUES 
+				( 
+					SEQ_IMAGES.NEXTVAL,
+					#{BOARD_IDX},
+					#{IMAGE_NAME, jdbcType = VARCHAR}
+				) 
+			
+			]]>
+	</insert>
+	
+	
+	
+	<update id="updatePhoto" parameterType="hashmap">
+		
+		<![CDATA[ 
+	
+		UPDATE 
+				BOARD 
+			SET 
+				BOARD_TITLE = #{BOARD_TITLE}, 
+				BOARD_CONTENT = #{BOARD_CONTENT}
+			WHERE 
+				BOARD_IDX = #{BOARD_IDX} 
+		
+		]]>
+	
+			
+	</update>
+	
+	<update id="updatePhotoImage" parameterType="hashmap">
+		<![CDATA[ 
+			UPDATE 
+					IMAGES 
+				SET 
+					IMAGE_NAME = #{IMAGE_NAME} 
+					
+				WHERE 
+					BOARD_IDX = #{BOARD_IDX} 
+			]]>
+	</update>
+	
+	
+
+
+
+	
+	<select id="selectPhotoList" parameterType="hashmap" resultType="hashmap">
+		<include refid="common.pagingPre"/> 
+		
+		<![CDATA[ 
+		
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY B.BOARD_IDX DESC) RNUM,
+				B.BOARD_KIND, 
+				B.BOARD_IDX,
+				B.BOARD_TITLE,
+				B.MEMBER_ID,
+				B.BOARD_COUNT,
+				TO_CHAR(B.BOARD_REGDATE, 'YYYY.MM.DD') AS BOARD_REGDATE,
+				I.IMAGE_NAME
+			FROM 
+				BOARD B LEFT OUTER JOIN	IMAGES I ON B.BOARD_IDX = I.BOARD_IDX
+			WHERE
+				B.BOARD_KIND BETWEEN 3 AND 4
+			ORDER BY B.BOARD_IDX DESC 
+				
+		]]>
+		
+		<include refid="common.pagingPost"/> 
+		
+	</select>
+	<!-- @@@@@@@@@@@@@@@@@@@@@@@@@@QNA@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+	<select id="qnaList" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT
+				QNA_IDX,
+				QNA_CATEGORY,
+				QNA_TITLE,
+				MEMBER_ID,
+				QNA_REGDATE,
+				REPLY_STATE
+				
+			FROM QNA
+			WHERE MEMBER_ID = #{MEMBER_ID}
+		]]>
+	</select>
+	
+	<insert id="qnaWrite" parameterType="hashmap">
+		<![CDATA[
+			INSERT INTO QNA
+			(
+				QNA_IDX,
+				MEMBER_ID,
+				QNA_TITLE,
+				QNA_CATEGORY,
+				QNA_CONTENT,
+				QNA_REGDATE,
+				QNA_EMAIL,
+				ANSWER_EMAIL,
+				QNA_PHONE,
+				ANSWER_PHONE,
+				REPLY_TITLE,
+				REPLY_CONTENT,
+				REPLY_REGDATE,
+				REPLY_STATE
+			)
+			VALUES
+			(
+				SEQ_QNA.NEXTVAL,
+				#{MEMBER_ID},
+				#{QNA_TITLE},
+				#{QNA_CATEGORY},
+				#{QNA_CONTENT},
+				TO_CHAR(SYSDATE, 'YYYYMMDD'),
+				#{QNA_EMAIL},
+				#{ANSWER_EMAIL},
+				#{QNA_PHONE},
+				#{ANSWER_PHONE},
+				'답변이 아직 달리지 않았습니다.',
+				'답변이 아직 달리지 않았습니다.',
+				NULL,
+				'N'
+			)
+		]]>
+	</insert>
+	
+	<update id="qnaModify" parameterType="hashmap">
+		<![CDATA[
+			UPDATE QNA 
+			SET
+				QNA_TITLE = #{QNA_TITLE},
+				QNA_CATEGORY = #{QNA_CATEGORY},
+				QNA_CONTENT = #{QNA_CONTENT},
+				QNA_EMAIL = #{QNA_EMAIL},
+				ANSWER_EMAIL = #{ANSWER_EMAIL},
+				QNA_PHONE = #{QNA_PHONE},
+				ANSWER_PHONE = #{ANSWER_PHONE}
+			
+			WHERE
+				QNA_IDX = #{QNA_IDX}
+		]]>
+	</update>
+	
+</mapper>

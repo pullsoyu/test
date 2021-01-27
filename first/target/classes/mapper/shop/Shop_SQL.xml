@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="shop">
+
+
+
+<insert id="addLike" parameterType="hashmap" >
+		
+		<![CDATA[
+			INSERT INTO WISHLIST 
+			( 
+				LIKE_IDX,
+				MEMBER_ID,
+				GOODS_IDX
+			 )
+			 VALUES
+			 ( 
+			 	SEQ_LIKE.NEXTVAL,
+			 	#{MEMBER_ID},
+				#{GOODS_IDX}
+			)
+		]]>
+</insert>
+
+<insert id="addCart" parameterType="hashmap" >
+		
+		<![CDATA[
+			INSERT INTO CART 
+			( 
+				CART_IDX,
+				MEMBER_ID,
+				GOODS_IDX,
+				GOODS_AMOUNT
+			 )
+			 VALUES
+			 ( 
+			 	SEQ_CART.NEXTVAL,
+			 	#{MEMBER_ID},
+				#{GOODS_IDX},
+				#{GOODS_AMOUNT}
+			)
+		]]>
+</insert>
+
+
+<insert id="addOrderList" parameterType="hashmap" useGeneratedKeys="true" keyProperty="TOTAL_COST">
+	<selectKey keyProperty="TOTAL_COST" resultType="int" order="BEFORE">
+		select GOODS_PRICE from GOODS where GOODS_IDX = #{GOODS_IDX}
+	</selectKey>
+
+		
+			INSERT INTO OrderList 
+			( 
+				ORDER_IDX,
+				GOODS_IDX,
+				MEMBER_IDX,
+				ORDER_AMOUNT,
+				ORDER_REGISTDATE,
+				ORDER_STATE,
+				ORDER_TOTAL,
+				DELIVERY_PAY,
+				ORDER_PACKAGE
+			 )
+			 VALUES
+			 ( 
+			 	SEQ_ORDERLIST.NEXTVAL,
+			 	#{GOODS_IDX},
+				#{MEMBER_IDX},
+				#{GOODS_AMOUNT},
+				TO_CHAR(SYSDATE, 'YYYYMMDD'),
+				'상품준비중',
+				#{TOTAL_COST} * ${GOODS_AMOUNT},
+				<if test=" GOODS_AMOUNT * TOTAL_COST gte 50000">
+				0
+				</if>
+				<if test=" GOODS_AMOUNT * TOTAL_COST lt 50000">
+				3000
+				</if>,
+				#{RANDOM}
+			)
+		
+</insert>
+
+<insert id="addCartOrderList" parameterType="hashmap">
+		
+			insert into ORDERLIST(
+			
+				ORDER_IDX,
+				MEMBER_IDX,
+				GOODS_IDX,
+				ORDER_AMOUNT,
+				ORDER_REGISTDATE,
+				ORDER_STATE,
+				ORDER_TOTAL,
+				DELIVERY_PAY,
+				ORDER_PACKAGE,
+				ORDER_NAME,
+				ORDER_EMAIL,
+				ORDER_PHONE,
+				ORDER_ZIP,
+				ORDER_ADDRESS1,
+				ORDER_ADDRESS2
+				)
+                values(
+                SEQ_ORDERLIST.NEXTVAL,
+                (select member_idx from member where member_id = (select member_id from cart where cart_idx = #{CART_IDX})),
+                (select goods_idx from cart where cart_idx = #{CART_IDX}),
+                (select goods_amount from cart where cart_idx = #{CART_IDX}),
+                TO_CHAR(SYSDATE, 'YYYYMMDD'),
+				'상품준비중',
+				#{totalPrice},				
+				<if test=" totalPrice gte 50000">
+				0
+				</if>
+				<if test=" totalPrice lt 50000">
+				3000
+				</if>,
+				#{RANDOM},
+				#{orderName},
+				#{orderEmail},
+				#{orderPhone},
+				#{orderZip},
+				#{orderAddress1},
+				#{orderAddress2}
+				)
+				
+</insert>
+
+<insert id="reviewWrite" parameterType="hashmap" >
+		
+		<![CDATA[
+			INSERT INTO REVIEW 
+			( 
+				REVIEW_IDX,
+				GOODS_IDX,
+				MEMBER_IDX,
+				REVIEW_TITLE,
+				REVIEW_CONTENT,
+				REVIEW_DATE,
+				REVIEW_SCORE
+			 )
+			 VALUES
+			 ( 
+			 	SEQ_REVIEW.NEXTVAL,
+			 	#{GOODS_IDX},
+			 	#{MEMBER_IDX},
+			 	#{REVIEW_TITLE},
+			 	#{REVIEW_CONTENT},
+			 	SYSDATE,
+			 	#{REVIEW_SCORE}
+			)
+			
+		]]>
+</insert>
+
+<select id="goodsReviewList" parameterType="hashmap" resultType="hashmap">
+		
+		<![CDATA[
+			SELECT
+			    M.MEMBER_ID,
+			    R.REVIEW_IDX,
+			    R.REVIEW_TITLE,
+			    R.REVIEW_CONTENT,
+			    R.REVIEW_DATE,
+			    R.REVIEW_SCORE
+			FROM
+			    REVIEW R, MEMBER M
+			WHERE
+				R.MEMBER_IDX=M.MEMBER_IDX
+			AND
+				R.GOODS_IDX=#{GOODS_IDX}
+		]]>
+		 
+</select>
+
+<!-- 상품평(상품댓글) 삭제 -->
+<delete id="reviewDelete" parameterType="hashmap" >
+	delete REVIEW
+	where REVIEW_IDX = #{REVIEW_IDX}
+	and MEMBER_IDX = #{MEMBER_IDX}
+</delete>
+
+
+<!-- 상품평(상품댓글) 삭제 -->
+<delete id="reviewModify" parameterType="hashmap" >
+	update REVIEW
+	SET
+		REVIEW_CONTENT = #{REVIEW_CONTENT}
+	
+	where REVIEW_IDX = #{REVIEW_IDX}
+	and MEMBER_IDX = #{MEMBER_IDX}
+</delete>
+
+<!-- 카카오 -->
+<select id="selectOrderList" parameterType="hashmap" resultType="hashmap">
+		
+		<![CDATA[
+			SELECT
+			    ORDER_NAME,
+				ORDER_EMAIL,
+				ORDER_PHONE,
+				ORDER_ZIP,
+				ORDER_ADDRESS1,
+				ORDER_ADDRESS2
+			FROM
+			    ORDERLIST
+			
+			
+		]]>
+		 
+</select>
+
+<!-- 결제 취소시 주문 삭제 -->
+
+<delete id="orderError" parameterType="hashmap" >
+<![CDATA[
+          DELETE FROM ORDERLIST
+          WHERE ORDER_PACKAGE =
+          (SELECT ORDER_PACKAGE
+          FROM
+          (SELECT ORDER_PACKAGE
+          FROM ORDERLIST
+          WHERE MEMBER_IDX = (SELECT MEMBER_IDX FROM MEMBER WHERE MEMBER_ID = #{MEMBER_ID})
+          ORDER BY ORDER_PACKAGE DESC)
+          WHERE ROWNUM = 1
+          )
+]]>                     
+</delete>
+
+
+</mapper>

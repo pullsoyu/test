@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="admin">
+	
+	<select id="memberList" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT
+				member_idx,
+				member_id,
+				member_name,
+				member_registDate,
+				member_delGB
+			FROM
+				member
+		]]>
+	</select>
+	
+	<select id="selectMemberList" parameterType="hashmap" resultType="hashmap">
+		<include refid="common.pagingPre"/> 
+		<![CDATA[
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY MEMBER_IDX DESC) RNUM,
+			    MEMBER_IDX,
+			    MEMBER_ID,
+			    MEMBER_NAME,
+			    MEMBER_REGISTDATE,
+			    MEMBER_DELGB
+			FROM
+			    MEMBER
+		]]>
+		<include refid="common.pagingPost"/> 
+	</select>
+	
+	
+	<select id="memberDetail" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT
+				member_idx,
+				member_id,
+				member_password,
+				member_name,
+				member_phone,
+				member_email,
+				member_address1,
+				member_address2,
+				member_zipcode,
+				member_registDate,
+				member_point,
+				member_delGB,
+				member_delDate
+			FROM
+				member				
+			where 
+				member_idx=#{MEMBER_IDX}
+		]]>	
+	</select>
+	
+	<update id="memberModify" parameterType="hashmap">
+		<![CDATA[
+			UPDATE member 
+			SET
+				member_password = #{member_password},
+				member_name = #{member_name},
+				member_phone= #{member_phone},
+				member_email = #{member_email},
+				member_address1= #{member_address1},
+				member_address2 = #{member_address2},
+				member_zipcode= #{member_zipcode},
+				member_point = #{member_point},
+				member_delGB = #{member_delGB}
+			WHERE
+				member_idx=#{MEMBER_IDX}
+		]]>
+	</update>
+
+	<select id="goodsList" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT
+				GOODS_IDX,
+				GOODS_NAME,
+				GOODS_PRICE,
+				GOODS_KIND
+			FROM GOODS
+
+		]]>
+	</select>
+
+	<select id="selectGoodsList" parameterType="hashmap" resultType="hashmap">
+		<include refid="common.pagingPre"/> 
+		<![CDATA[
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY GOODS_IDX DESC) RNUM,
+			    GOODS_IDX,
+				GOODS_NAME,
+				GOODS_PRICE,
+			    GOODS_KIND
+			FROM
+			    GOODS
+		]]>
+		<include refid="common.pagingPost"/> 
+	</select>
+
+	<insert id="goodsWrite" parameterType="hashmap" >
+		
+		<![CDATA[
+			INSERT INTO GOODS 
+			( 
+				goods_idx,
+				goods_kind,
+				goods_name,
+				goods_price,
+				goods_company,
+				goods_origin,
+				goods_count,
+				delivery_pay,
+				goods_content,
+				goods_sumIMG
+			 )
+			 VALUES
+			 ( 
+			 	SEQ_GOODS.NEXTVAL,
+			 	#{GOODS_KIND},
+			 	#{GOODS_NAME},
+			 	#{GOODS_PRICE},
+			 	#{GOODS_COMPANY},
+				#{GOODS_ORIGIN},
+				#{GOODS_COUNT},
+				#{DELIVERY_PAY},
+				#{GOODS_CONTENT},
+				#{GOODS_SUMIMG}
+			)
+		]]>
+	</insert>
+
+	<select id="goodsDetail" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT
+				goods_idx,
+				goods_kind,
+				goods_name,
+				goods_price,
+				goods_company,
+				goods_origin,
+				goods_count,
+				delivery_pay,
+				goods_content,
+				goods_sumIMG
+			FROM 
+				GOODS
+			where 
+				goods_idx=#{GOODS_IDX}
+		]]>
+	</select>
+	
+	<update id="goodsModify" parameterType="hashmap">
+		<![CDATA[
+			UPDATE goods 
+			SET
+				goods_name = #{GOODS_NAME},
+				goods_price = #{GOODS_PRICE},
+				goods_company = #{GOODS_COMPANY},
+				goods_origin = #{GOODS_ORIGIN},
+				goods_count = #{GOODS_COUNT},
+				delivery_pay = #{DELIVERY_PAY},
+				goods_content = #{GOODS_CONTENT}
+			WHERE
+				goods_idx=#{GOODS_IDX}
+		]]>
+	</update>
+	
+	<delete id="goodsDelete" parameterType="hashmap">
+		<![CDATA[
+			DELETE FROM
+				GOODS
+			WHERE
+				GOODS_IDX=#{GOODS_IDX}
+		]]>
+	</delete>
+	
+	<select id="orderList" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT
+				ORDER_IDX,
+				GOODS_IDX,
+				MEMBER_IDX,
+				ORDER_AMOUNT,
+				ORDER_REGISTDATE,
+				ORDER_STATE,
+				ORDER_TOTAL,
+				DELIVERY_PAY
+			FROM ORDERLIST
+
+		]]>
+	</select>
+	
+	<select id="selectOrderList" parameterType="hashmap" resultType="hashmap">
+		<include refid="common.pagingPre"/> 
+		<![CDATA[
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY ORDER_IDX DESC) RNUM,
+			    ORDER_IDX,
+				GOODS_IDX,
+				MEMBER_IDX,
+				ORDER_AMOUNT,
+				ORDER_REGISTDATE,
+				ORDER_STATE,
+				ORDER_TOTAL,
+				DELIVERY_PAY
+			FROM
+			    ORDERLIST
+		]]>
+		<include refid="common.pagingPost"/> 
+	</select>
+	
+	<update id="orderModify" parameterType="hashmap">
+		<![CDATA[
+			UPDATE orderList 
+			SET
+				order_state = #{ORDER_STATE}
+				
+			WHERE
+				order_idx=#{ORDER_IDX}
+		]]>
+	</update>
+	
+	
+	<!-- 자주묻는질문 FAQ 카테고리별 리스트 -->
+	<select id="faqList" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT
+				faq_idx,
+				faq_question,
+				faq_answer
+			FROM faq
+			WHERE faq_category=#{FAQ_CATEGORY}
+
+		]]>
+	</select>
+	
+	<insert id="faqWrite" parameterType="hashmap" >
+		
+		<![CDATA[
+			INSERT INTO FAQ 
+			( 
+				faq_idx,
+				faq_category,
+				faq_question,
+				faq_answer
+			 )
+			 VALUES
+			 ( 
+			 	SEQ_FAQ.NEXTVAL,
+			 	#{FAQ_CATEGORY},
+			 	#{FAQ_QUESTION},
+			 	#{FAQ_ANSWER}
+			 	
+			)
+		]]>
+	</insert>
+	
+	<select id="faqDetail" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT
+				faq_idx,
+				faq_category,
+				faq_question,
+				faq_answer
+			FROM 
+				FAQ
+			where 
+				faq_idx=#{FAQ_IDX}
+		]]>
+	</select>
+	
+	
+	<update id="faqModify" parameterType="hashmap">
+		<![CDATA[
+			UPDATE faq 
+			SET
+				faq_idx = #{FAQ_IDX},
+				faq_category = #{FAQ_CATEGORY},
+				faq_question = #{FAQ_QUESTION},
+				faq_answer = #{FAQ_ANSWER}
+				
+			WHERE
+				faq_idx=#{FAQ_IDX}
+		]]>
+	</update>
+	
+	<delete id="faqDelete" parameterType="hashmap">
+		<![CDATA[
+			DELETE FROM
+				FAQ
+			WHERE
+				FAQ_IDX=#{FAQ_IDX}
+		]]>
+	</delete>
+	
+	<select id="qnaList" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT
+				QNA_IDX,
+				QNA_CATEGORY,
+				QNA_TITLE,
+				MEMBER_ID,
+				QNA_REGDATE,
+				REPLY_STATE
+				
+			FROM QNA
+
+		]]>
+	</select>
+	
+	<select id="selectQnaList" parameterType="hashmap" resultType="hashmap">
+		<include refid="common.pagingPre"/> 
+		<![CDATA[
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY QNA_IDX DESC) RNUM,
+			    QNA_IDX,
+				QNA_CATEGORY,
+				QNA_TITLE,
+				MEMBER_ID,
+				QNA_REGDATE,
+				REPLY_STATE
+			FROM
+			    QNA
+		]]>
+		<include refid="common.pagingPost"/> 
+	</select>
+	
+	
+	
+	
+	<select id="qnaDetail" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT
+				qna_idx, 
+				member_id, 
+				qna_category, 
+				qna_title, 
+				qna_content, 
+				qna_regDate, 
+				qna_email,   
+				answer_email, 
+				qna_phone, 
+				answer_phone, 
+				reply_title, 
+				reply_content, 
+				reply_regDate,
+				reply_state
+			FROM 
+				QNA
+			where 
+				qna_idx=#{QNA_IDX}
+		]]>
+	</select>
+	
+	<update id="qnaModify" parameterType="hashmap">
+		<![CDATA[
+			UPDATE qna 
+			SET
+				reply_title = #{REPLY_TITLE}, 
+				reply_content = #{REPLY_CONTENT}, 
+				reply_regDate = TO_CHAR(SYSDATE, 'YYYYMMDD'),
+				reply_state = 'y'
+			
+			WHERE
+				qna_idx=#{QNA_IDX}
+		]]>
+	</update>
+	
+	<delete id="qnaDelete" parameterType="hashmap">
+		<![CDATA[
+			DELETE FROM
+				QNA
+			WHERE
+				QNA_IDX=#{QNA_IDX}
+		]]>
+	</delete>
+	
+	<select id="selectReviewList" parameterType="hashmap" resultType="hashmap">
+		<include refid="common.pagingPre"/> 
+		<![CDATA[
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY REVIEW_IDX DESC) RNUM,
+			    REVIEW_IDX,
+			    GOODS_IDX,
+			    MEMBER_IDX,
+			    REVIEW_TITLE,
+			    REVIEW_CONTENT,
+			    REVIEW_DATE,
+			    REVIEW_SCORE
+			FROM
+			    REVIEW
+		]]>
+		<include refid="common.pagingPost"/> 
+	</select>
+	
+	<delete id="reviewDelete" parameterType="hashmap">
+		<![CDATA[
+			DELETE FROM
+				REVIEW
+			WHERE
+				REVIEW_IDX=#{REVIEW_IDX}
+		]]>
+	</delete>
+	
+	
+	<select id="selectPhotoList" parameterType="hashmap" resultType="hashmap">
+		<include refid="common.pagingPre"/> 
+		
+		<![CDATA[ 
+		
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY B.BOARD_IDX DESC) RNUM,
+				B.BOARD_KIND, 
+				B.BOARD_IDX,
+				B.BOARD_TITLE,
+				B.MEMBER_ID,
+				B.BOARD_COUNT,
+				TO_CHAR(B.BOARD_REGDATE, 'YYYY.MM.DD') AS BOARD_REGDATE,
+				I.IMAGE_NAME
+			FROM 
+				BOARD B LEFT OUTER JOIN	IMAGES I ON B.BOARD_IDX = I.BOARD_IDX
+			WHERE
+				B.BOARD_KIND BETWEEN 3 AND 4
+			ORDER BY B.BOARD_IDX DESC 
+				
+		]]>
+		
+		<include refid="common.pagingPost"/> 
+		
+	</select>
+	
+</mapper>
+
+

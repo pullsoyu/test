@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mypage">
+
+<!-- 비밀번호 확인 -->
+<select id="selectPwCheck" parameterType="hashMap" resultType="Integer">
+<![CDATA[
+	SELECT  COUNT(*)
+	FROM    MEMBER
+	WHERE   MEMBER_ID = #{MEMBER_ID}
+	AND     MEMBER_PASSWORD = #{MEMBER_PASSWORD}
+
+ ]]>
+</select>
+
+
+<!-- 회원 정보 변경폼 -->
+<select id="selectAccountInfo" parameterType="hashMap" resultType="hashMap">
+<![CDATA[
+	SELECT  
+	        member_id,
+	        member_password,
+	        member_name,
+	        member_phone,
+	        member_email,
+	        member_address1,
+	        member_address2,
+	        member_zipcode,
+	        member_registDate,
+	        member_point,
+	        member_delGB
+	FROM    MEMBER
+	WHERE   MEMBER_ID = #{MEMBER_ID}
+
+ ]]>
+</select>
+
+
+
+<update id="updateAccountModify" parameterType="hashMap">
+<![CDATA[
+	UPDATE  MEMBER
+	SET     
+			member_password=#{member_password},
+	        member_phone=#{member_phone},
+	        member_email=#{member_email},
+	        member_address1=#{member_address1},
+	        member_address2=#{member_address2},
+	        member_zipcode=#{member_zipcode}
+	WHERE   MEMBER_ID = #{MEMBER_ID}
+
+ ]]>
+</update>
+
+<update id="deleteAccount" parameterType="hashMap">
+<![CDATA[
+	UPDATE  MEMBER
+	SET     MEMBER_DELGB = 'Y'
+	WHERE MEMBER_PASSWORD = #{MEMBER_PASSWORD}
+
+ ]]>
+</update>
+
+<!-- 찜한상품 -->
+<select id="likeList" parameterType="hashMap" resultType="hashMap">
+
+<![CDATA[
+			SELECT * FROM
+					(SELECT 
+						row_number() over(order by LIKE_IDX desc) RNUM , s.*
+					 FROM(		
+						SELECT W.LIKE_IDX,G.GOODS_IDX, G.GOODS_SUMIMG, G.GOODS_NAME, G.GOODS_PRICE,(select count(*) from wishlist where MEMBER_ID = #{MEMBER_ID}) as count
+						FROM WISHLIST W, GOODS G, MEMBER M
+						WHERE M.MEMBER_ID = #{MEMBER_ID}
+						AND M.MEMBER_ID = W.MEMBER_ID
+						AND G.GOODS_IDX = W.GOODS_IDX
+						) s)
+ ]]>
+
+</select>
+
+<delete id="likeDelete" parameterType="hashMap" >
+<![CDATA[
+delete
+from wishlist
+where like_idx = #{LIKE_IDX}
+ ]]>
+</delete>
+
+<delete id="likeClear" parameterType="hashMap" >
+<![CDATA[
+delete
+from wishlist
+where member_id = #{MEMBER_ID}
+ ]]>
+</delete>
+
+
+<!-- 장바구니 -->
+<select id="basketList" parameterType="hashMap" resultType="hashMap">
+
+<![CDATA[
+			SELECT * FROM
+					(SELECT 
+						row_number() over(order by CART_IDX desc) RNUM, s.* 
+					 FROM(		
+						SELECT C.CART_IDX,C.goods_amount, G.GOODS_SUMIMG, G.GOODS_NAME, G.GOODS_PRICE,G.GOODS_IDX,G.DELIVERY_PAY,M.MEMBER_ID,(select count(*) from cart where MEMBER_ID = #{MEMBER_ID}) as count 
+						FROM CART C, GOODS G, MEMBER M
+						WHERE M.MEMBER_ID = #{MEMBER_ID}
+						AND M.MEMBER_ID = C.MEMBER_ID
+						AND G.GOODS_IDX = C.GOODS_IDX
+						)s)
+ ]]>
+
+</select>
+
+<update id="basketModify" parameterType="hashMap">
+<![CDATA[
+	UPDATE  CART
+	SET     
+			GOODS_AMOUNT=#{GOODS_AMOUNT}
+	        
+	WHERE   CART_IDX = #{CART_IDX}
+
+ ]]>
+</update>
+
+
+
+<delete id="basketDelete" parameterType="hashMap" >
+<![CDATA[
+delete
+from cart
+where cart_idx = #{CART_IDX}
+ ]]>
+</delete>
+
+<delete id="basketClear" parameterType="hashMap" >
+<![CDATA[
+delete
+from cart
+where member_id = #{MEMBER_ID}
+ ]]>
+</delete>
+
+<insert id="addBasket" parameterType="hashmap" >
+		
+		<![CDATA[
+			INSERT INTO CART 
+			( 
+				CART_IDX,
+				MEMBER_ID,
+				GOODS_IDX,
+				GOODS_AMOUNT
+			 )
+			 VALUES
+			 ( 
+			 	SEQ_CART.NEXTVAL,
+			 	(SELECT MEMBER_ID FROM WISHLIST WHERE LIKE_IDX = #{LIKE_IDX}),
+				(SELECT GOODS_IDX FROM WISHLIST WHERE LIKE_IDX = #{LIKE_IDX}),
+				'1'
+			)
+		]]>
+</insert>
+
+<!-- 배송/주문조회 -->
+<select id="myOrderList" parameterType="hashMap" resultType="hashMap">
+<include refid="common.pagingPre"/> 
+<![CDATA[
+			                        SELECT * FROM
+					(SELECT 
+						row_number() over(order by ORDER_IDX desc) RNUM, s.* 
+					 FROM(		
+						SELECT O.ORDER_IDX,G.GOODS_IDX,O.ORDER_AMOUNT, G.GOODS_SUMIMG, G.GOODS_NAME, G.GOODS_PRICE,G.DELIVERY_PAY,to_char(O.order_registDate,'YYYY-MM-DD') order_registDate,O.ORDER_STATE
+						FROM ORDERLIST O , GOODS G, MEMBER M 
+						WHERE M.MEMBER_IDX = (SELECT MEMBER_IDX FROM MEMBER WHERE MEMBER_ID = #{MEMBER_ID})
+						AND M.MEMBER_IDX = O.MEMBER_IDX
+						AND G.GOODS_IDX = O.GOODS_IDX
+						) s)
+ ]]>
+<include refid="common.pagingPost"/> 
+</select>
+
+<!-- 배송/주문조회 상세보기 -->
+<select id="myOrderDetail" parameterType="hashMap" resultType="hashMap">
+<![CDATA[
+			      	       SELECT * FROM
+					(SELECT 
+						row_number() over(order by ORDER_IDX desc) RNUM, s.* 
+					 FROM(		
+						SELECT O.ORDER_IDX,G.GOODS_IDX,O.ORDER_AMOUNT, G.GOODS_SUMIMG, G.GOODS_NAME, G.GOODS_PRICE,G.DELIVERY_PAY,to_char(O.order_registDate,'YYYY-MM-DD') order_registDate,O.ORDER_STATE
+						FROM ORDERLIST O, GOODS G, MEMBER M
+						WHERE O.ORDER_IDX = #{ORDER_IDX}
+						AND O.MEMBER_IDX = M.MEMBER_IDX
+						AND G.GOODS_IDX = O.GOODS_IDX 
+						) s)
+ ]]>
+</select>
+
+<!-- 주문 취소/반품 -->
+
+<update id="cancelOrder" parameterType="hashMap">
+<![CDATA[
+	UPDATE  ORDERLIST
+	SET     
+	        ORDER_STATE='취소/반품신청'
+	WHERE   ORDER_IDX = #{ORDER_IDX}
+ ]]>
+</update>
+
+
+     
+<!-- 좋아요 버튼
+<update id="like_check" parameterType="HashMap">
+<![CDATA[
+    UPDATE WISHLIST
+    SET LIKE_CHECK = LIKE_CHECK + 1 
+    WHERE MEMBER_ID =#{MEMBER_ID} AND GOODS_IDX =#{GOODS_IDX}
+
+  ]]> 
+  
+</update>
+
+
+<update id="like_check_cancel" parameterType="HashMap">
+  <![CDATA[
+    UPDATE WISHLIST
+    SET LIKE_CHECK = 0 
+    WHERE MEMBER_ID =#{MEMBER_ID} AND GOODS_IDX =#{GOODS_IDX}
+ 
+  ]]> 
+</update>
+-->
+
+
+<!-- 본인 신고내역 리스트
+<select id="selectMyReportList" parameterType="hashMap" resultType="hashMap">
+<![CDATA[
+	SELECT  R.REPORT_NUM,
+        	R.REPORT_TITLE,
+        	M.MEM_ID,
+        	R.REPORT_DATE,
+        	TO_CHAR(R.REPORT_DATE,'hh24:mi:ss') AS REPORT_TIME,
+        	R.REPORT_STATUS
+	FROM    REPORT R, 
+        	(
+         	SELECT MEM_NUM, MEM_ID
+         	FROM   MEMBER
+         	WHERE  MEM_ID = #{MEM_ID}
+         	) M
+	WHERE   R.REPORT_WRITER = M.MEM_NUM
+	AND     R.REPORT_DEL_GB = 'N'
+
+ ]]>
+</select>
+
+
+본인 신고내역 상세보기
+<select id="selectMyReportDetail" parameterType="hashMap" resultType="hashMap">
+<![CDATA[
+	SELECT  R.REPORT_NUM,
+        	R.REPORT_TITLE,
+        	M.MEM_ID,
+        	R.REPORT_DATE,
+        	TO_CHAR(R.REPORT_DATE,'hh24:mi:ss') AS REPORT_TIME,
+        	R.REPORT_STATUS,
+        	R.REPORT_CONTENT,
+        	R.REPORT_COUNT,
+        	R.REPORT_PRONUM,
+        	R.REPORT_TYPE
+	FROM    REPORT R, 
+        	(
+         	SELECT MEM_NUM, MEM_ID
+         	FROM   MEMBER
+        	 WHERE  MEM_ID = #{MEM_ID}
+         	) M
+	WHERE   R.REPORT_WRITER = M.MEM_NUM
+	AND     R.REPORT_NUM = #{REPORT_NUM}
+
+ ]]>
+</select>
+
+
+본인 QNA 리스트
+<select id="selectMyQnaList" parameterType="hashMap" resultType="hashMap">
+<![CDATA[
+	SELECT  A.*, 
+        	DECODE(B.QNA_NUM, A.QNA_NUM, 'Y', 'N') AS "답글여부"
+	FROM    (
+	        SELECT  Q.QNA_NUM,
+  	              	Q.QNA_TITLE,
+       	         	M.MEM_ID,
+     	           	Q.QNA_DATE,
+    	            TO_CHAR(Q.QNA_DATE,'hh24:mi:ss') AS QNA_TIME,
+    	            Q.QNA_PARENT
+  	      	FROM    QNA Q,
+          	      	(
+         	        	SELECT MEM_NUM, MEM_ID
+      		           	FROM   MEMBER
+      		           	WHERE  MEM_ID = #{MEM_ID}
+                	) M
+        	WHERE   Q.QNA_WRITER = M.MEM_NUM
+        	AND     Q.QNA_PARENT IS NULL
+        	AND     Q.QNA_DEL_GB = 'N'
+        	) A
+	LEFT OUTER JOIN
+        	(
+        	SELECT  A.QNA_NUM
+        	FROM    QNA A, QNA B
+        	WHERE   A.QNA_NUM = B.QNA_PARENT
+        	) B
+	ON  A.QNA_NUM = B.QNA_NUM
+
+ ]]>
+</select>
+
+
+본인 QNA 상세보기
+<select id="selectMyQnaDetail" parameterType="hashMap" resultType="hashMap">
+<![CDATA[
+	SELECT  A.*, 
+    	    DECODE(B.QNA_NUM, A.QNA_NUM, 'Y', 'N') AS "답글여부"
+	FROM    (
+  	    	SELECT  Q.QNA_NUM,
+            Q.QNA_TITLE,
+            M.MEM_ID,
+            Q.QNA_DATE,
+            TO_CHAR(Q.QNA_DATE,'hh24:mi:ss') AS QNA_TIME,
+            Q.QNA_PARENT,
+            Q.QNA_CONTENT,
+            Q.QNA_TYPE,
+            Q.QNA_COUNT
+        	FROM    QNA Q,
+                	(
+                 	SELECT MEM_NUM, MEM_ID
+                 	FROM   MEMBER
+                 	WHERE  MEM_ID = #{MEM_ID}
+                	) M
+        	WHERE   Q.QNA_WRITER = M.MEM_NUM
+        	AND     Q.QNA_PARENT IS NULL
+        	AND     Q.QNA_NUM = #{QNA_NUM}
+        	) A
+	LEFT OUTER JOIN
+        	(
+        	SELECT  A.QNA_NUM
+        	FROM    QNA A, QNA B
+        	WHERE   A.QNA_NUM = B.QNA_PARENT
+        	) B
+	ON  A.QNA_NUM = B.QNA_NUM
+]]>
+</select>  -->
+
+</mapper>
